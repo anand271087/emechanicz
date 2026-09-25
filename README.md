@@ -112,8 +112,20 @@ The code is organised so each module is self-contained:
 
 ## Deploying
 
-- **Backend**: any Python host with Pango (Render, Railway, Fly.io, a VPS). Start command:
-  `uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips="*"`. Set the backend env vars there and
-  `CORS_ORIGINS` to the frontend URL.
-- **Frontend**: `npm run build` and host `frontend/dist` on Vercel or Netlify, with the three
-  `VITE_*` variables set at build time. Configure the host to serve `index.html` for all routes.
+The backend runs from `backend/Dockerfile`, which installs Pango for PDFs, on Render. The frontend
+is a static site on Vercel or Netlify. Deploy in this order, because each side needs the other's URL.
+
+1. **Backend on Render**: New → Blueprint → pick this repo. Render reads `render.yaml` and asks for
+   the secret values: `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY` and the `SMTP_*` settings
+   from `backend/.env`. Set `CORS_ORIGINS` to `*` for now. When it's live, open
+   `https://<service>.onrender.com/api/v1/health`, which should show `{"status":"ok"}`.
+2. **Frontend on Vercel**: Add New → Project → import this repo, set Root Directory to `frontend`,
+   and add `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` and `VITE_API_BASE_URL` (the Render URL,
+   no trailing slash). `frontend/vercel.json` handles page refreshes on deep links.
+   **Or on Netlify**: import the repo. `netlify.toml` sets the base directory and build, and
+   `frontend/public/_redirects` handles deep links. Add the same three `VITE_*` variables.
+3. **Lock CORS**: in Render, set `CORS_ORIGINS` to the frontend URL (e.g.
+   `https://emechanicz.vercel.app`) and save. Render redeploys automatically.
+
+Render's free plan sleeps after about 15 minutes idle, so the first request after that takes
+30–60 seconds. Upgrade the service to a paid plan to keep it always on.

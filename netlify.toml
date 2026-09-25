@@ -1,0 +1,5 @@
+# Netlify: frontend only. Set VITE_* variables in Site settings > Environment variables.
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist"
