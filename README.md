@@ -103,11 +103,11 @@ Line items support two special cases from existing quotations:
 The code is organised so each module is self-contained:
 
 1. **Database**: add `supabase/migrations/00N_<module>.sql` (enable RLS, no policies).
-3. **Backend**: `app/schemas/<module>.py` (request models), `app/services/<module>.py` (logic and data
+2. **Backend**: `app/schemas/<module>.py` (request models), `app/services/<module>.py` (logic and data
    access), `app/routers/<module>.py` (HTTP routes under `/api/v1/<module>`, with
    `Depends(get_current_user)`), then `app.include_router(...)` in `app/main.py`. Add tests in
    `backend/tests/` using `tests/fakes.py`.
-4. **Frontend**: pages in `src/modules/<module>/`, one entry in `src/modules/registry.tsx` (sidebar and
+3. **Frontend**: pages in `src/modules/<module>/`, one entry in `src/modules/registry.tsx` (sidebar and
    mobile tabs), and a route in `src/App.tsx`.
 
 ## Deploying
