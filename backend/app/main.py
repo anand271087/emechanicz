@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
-from app.routers import customers, quotes
+from app.routers import customers, documents, quotes
+from app.services.pdf import STATIC_DIR
 
 app = FastAPI(title="eMechanicz CRM API")
 app.add_middleware(
@@ -16,6 +18,8 @@ app.add_middleware(
 
 app.include_router(customers.router)
 app.include_router(quotes.router)
+app.include_router(documents.router)
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 @app.get("/api/v1/health")

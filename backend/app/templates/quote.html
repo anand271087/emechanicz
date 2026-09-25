@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Quotation {{ q.ref_no }}</title>
+<style>
+  @font-face { font-family: "Carlito"; font-weight: 400; src: url("{{ static }}/fonts/Carlito-Regular.ttf"); }
+  @font-face { font-family: "Carlito"; font-weight: 700; src: url("{{ static }}/fonts/Carlito-Bold.ttf"); }
+
+  @page { size: A4; margin: 34pt 46pt 36pt 46pt; }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: "Carlito", Calibri, "Segoe UI", Arial, sans-serif; font-size: 9.9pt;
+         color: #000; line-height: 1.25; }
+  .page { width: 503pt; }
+
+  .head { position: relative; height: 58pt; }
+  .head h1 { position: absolute; left: 2pt; top: 20pt; margin: 0; font-size: 18pt; font-weight: 700; }
+  .head img { position: absolute; left: 366pt; top: 14pt; width: 52pt; height: 49pt; }
+
+  table { border-collapse: collapse; }
+  .info { width: 100%; }
+  .info td { padding: 0; height: 13.6pt; vertical-align: bottom; white-space: nowrap; }
+  .info .lbl { width: 62pt; text-align: right; padding-right: 3pt; }
+  .info .val { width: 148pt; }
+  .intro { margin: 1pt 0 0 0; font-size: 10.8pt; }
+  .intro p { margin: 0; line-height: 1.35; }
+
+  .items { width: 503pt; margin-top: 7pt; table-layout: fixed; }
+  .items th, .items td { border: 0.75pt solid #000; padding: 1.5pt 3pt; vertical-align: middle; }
+  .items thead { display: table-header-group; }
+  .items th { background: #A6C9EC; font-weight: 700; text-align: center; }
+  .items tr { page-break-inside: avoid; }
+  .items td { height: 14pt; }
+  .c { text-align: center; }
+  .r { text-align: right; white-space: nowrap; }
+  .items .grand td { font-weight: 700; }
+
+  .words { margin-top: 9pt; }
+  .words td { padding: 0; }
+  .words .cur { width: 39pt; text-align: center; }
+
+  .terms { margin-top: 32pt; page-break-inside: auto; }
+  .terms h3 { font-size: 9.9pt; margin: 0 0 1pt 0; font-weight: 700; }
+  .terms table td { padding: 0.6pt 0; vertical-align: top; }
+  .terms .n { width: 39pt; text-align: right; padding-right: 4pt; }
+  .terms .extra { font-weight: 700; }
+  .closing { padding-left: 39pt; margin-top: 0.6pt; }
+
+  .sign { margin-top: 26pt; page-break-inside: avoid; }
+  .sign p { margin: 0; }
+  .sign .gap { height: 20pt; }
+  .sign .note { padding-left: 57pt; }
+
+  .footer { margin-top: 18pt; text-align: center; color: #17365D; line-height: 1.4; }
+  .footer .name { font-size: 9.3pt; letter-spacing: 0.2pt; }
+  .footer .addr { font-size: 9pt; }
+  .footer .contact { font-size: 9.9pt; }
+  .footer .gst { font-size: 9pt; color: #0E2841; }
+  sup { font-size: 60%; line-height: 0; vertical-align: super; }
+
+  @media screen {
+    body { background: #fff; }
+    .page { width: 210mm; min-height: 297mm; padding: 34pt 46pt 36pt 46pt; margin: 0 auto; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="head">
+    <h1>Quotation</h1>
+    <img src="{{ static }}/logo.png" alt="EMechanicz">
+  </div>
+
+  {% set intro_lines = (q.intro or "").split("\n") %}
+  <table class="info">
+    <tr><td colspan="3">Customer : {{ customer.company_name }}</td></tr>
+    <tr><td>Kind Attn : {{ q.kind_attn }}</td><td class="lbl">ETS Ref No :</td><td class="val">{{ q.ref_no }}</td></tr>
+    <tr><td></td><td class="lbl">Issue Status :</td><td class="val">{{ q.issue_status }}</td></tr>
+    <tr><td>{{ intro_lines[0] }}</td><td class="lbl">Date :</td><td class="val">{{ q.quote_date | date }}</td></tr>
+  </table>
+  {% if intro_lines | length > 1 %}
+  <div class="intro">{% for line in intro_lines[1:] %}<p>{{ line }}</p>{% endfor %}</div>
+  {% endif %}
+
+  <table class="items">
+    <colgroup>
+      <col style="width:38pt"><col style="width:291pt"><col style="width:27pt">
+      <col style="width:76pt"><col style="width:71pt">
+    </colgroup>
+    <thead>
+      <tr><th>Sl.No.</th><th>Description</th><th>Qty</th><th>Unit Price</th><th>TotalPrice</th></tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td class="c">{{ r.sl_no }}</td>
+        <td>{{ r.description }}</td>
+        {% if r.span >= 1 %}
+        <td class="c"{% if r.span > 1 %} rowspan="{{ r.span }}"{% endif %}>{{ r.qty | qty }}</td>
+        <td class="r"{% if r.span > 1 %} rowspan="{{ r.span }}"{% endif %}>{{ r.unit_price | inr }}</td>
+        <td class="r"{% if r.span > 1 %} rowspan="{{ r.span }}"{% endif %}>{{ r.total | inr }}</td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+      <tr class="grand"><td></td><td></td><td></td><td></td><td class="r">{{ q.subtotal | inr }}</td></tr>
+    </tbody>
+  </table>
+
+  <table class="words"><tr><td class="cur">INR</td><td>{{ q.amount_in_words }}</td></tr></table>
+
+  {% if q.terms %}
+  <div class="terms">
+    <h3>Terms and Conditions:</h3>
+    <table>
+      {% for t in q.terms %}
+      {% set lines = t.split("\n") %}
+      <tr><td class="n">{{ loop.index }}</td><td>{{ lines[0] }}</td></tr>
+      {% for extra in lines[1:] %}<tr><td class="n"></td><td class="extra">{{ extra }}</td></tr>{% endfor %}
+      {% endfor %}
+    </table>
+    {% if c.closing_line %}<div class="closing">{{ c.closing_line }}</div>{% endif %}
+  </div>
+  {% endif %}
+
+  <div class="sign">
+    <p>For {{ c.signatory_name or c.name }} ,</p>
+    <div class="gap"></div>
+    <p>Authorised Signatory</p>
+    {% if c.system_generated_note %}<p class="note">{{ c.system_generated_note }}</p>{% endif %}
+
+    <div class="footer">
+      <div class="name">{{ c.name }},</div>
+      <div class="addr">{{ c.footer_address | ordinals }}</div>
+      <div class="contact">M {{ c.phone }} - E: {{ c.emails }}</div>
+      <div class="gst">GST NO: {{ c.gst_no }}</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
