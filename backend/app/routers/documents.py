@@ -3,9 +3,12 @@ from fastapi.responses import HTMLResponse, Response
 
 from app.deps import get_current_user, get_db
 from app.services.app_settings import get_setting
+from app.services.docx_gen import quote_docx
 from app.services.formatting import download_name
 from app.services.pdf import quote_pdf, render_quote_html
 from app.services.quotes import fetch_quote
+
+DOCX_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 
 router = APIRouter(prefix="/api/v1/quotes", tags=["documents"],
                    dependencies=[Depends(get_current_user)])
@@ -27,3 +30,10 @@ def download_pdf(qid: str, db=Depends(get_db)):
     quote = fetch_quote(db, qid)
     return _attachment(quote_pdf(quote, get_setting(db, "company")), "application/pdf",
                        download_name(quote, "pdf"))
+
+
+@router.get("/{qid}/docx")
+def download_docx(qid: str, db=Depends(get_db)):
+    quote = fetch_quote(db, qid)
+    return _attachment(quote_docx(quote, get_setting(db, "company")), DOCX_TYPE,
+                       download_name(quote, "docx"))
