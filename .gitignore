@@ -8,3 +8,6 @@ dist/
 *.pyc
 .DS_Store
 .superpowers/
+
+# Customer quotation PDFs saved in the project root
+/*.pdf
