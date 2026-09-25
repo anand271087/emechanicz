@@ -2,12 +2,14 @@
 import copy
 import itertools
 import re
+from datetime import date
 from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 
 from app import deps
 from app.main import app
+from app.services.ref_no import financial_year
 
 # (table, embedded table) -> (cardinality, foreign key)
 RELATIONS = {
@@ -123,7 +125,8 @@ class FakeDB:
                 "phone": "+91 9844561185", "emails": "Sales@emechanicz.com",
                 "gst_no": "29AADCE7362F1ZI",
                 "closing_line": "Thanking you.", "system_generated_note": "System generated."}},
-            {"key": "quote_seq", "value": {"prefix": "P", "fy": "26-27", "seq": 301}},
+            {"key": "quote_seq", "value": {"prefix": "P", "fy": financial_year(date.today()),
+                                           "seq": 301}},
             {"key": "default_intro", "value": "Dear Sir,"},
             {"key": "default_terms", "value": ["Delivery: 3-4 Weeks"]},
         ]

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import customers
+from app.routers import customers, quotes
 
 app = FastAPI(title="eMechanicz CRM API")
 app.add_middleware(
@@ -15,6 +15,7 @@ app.add_middleware(
 
 
 app.include_router(customers.router)
+app.include_router(quotes.router)
 
 
 @app.get("/api/v1/health")
