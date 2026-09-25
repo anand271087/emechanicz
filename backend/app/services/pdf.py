@@ -19,7 +19,12 @@ def _ordinals(text) -> Markup:
     return Markup(ORDINAL_RE.sub(r"\1<sup>\2</sup>", str(escape(text or ""))))
 
 
-_env.filters["ordinals"] = _ordinals
+def _lines(text) -> Markup:
+    """Escape, then keep the user's line breaks."""
+    return Markup(str(escape(text or "")).replace("\n", "<br>"))
+
+
+_env.filters.update(ordinals=_ordinals, lines=_lines)
 
 
 def render_quote_html(quote: dict, company: dict, static_url: str | None = None) -> str:

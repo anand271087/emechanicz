@@ -8,6 +8,8 @@ from app.config import settings
 
 
 def main() -> None:
+    if not settings.admin_password:
+        raise SystemExit("Set ADMIN_PASSWORD in backend/.env before seeding the admin account")
     sb = create_client(settings.supabase_url, settings.supabase_service_role_key)
     existing = next((u for u in sb.auth.admin.list_users() if u.email == settings.admin_email), None)
     if existing:

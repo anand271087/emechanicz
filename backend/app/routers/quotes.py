@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends
+from datetime import date
+
+from fastapi import APIRouter, Depends, Query
 
 from app.deps import CurrentUser, get_current_user, get_db
 from app.schemas.quote import QuoteIn
@@ -10,8 +12,8 @@ router = APIRouter(prefix="/api/v1/quotes", tags=["quotes"],
 
 
 @router.get("/next-ref")
-def next_ref(db=Depends(get_db)):
-    return {"ref_no": svc.suggest_ref(db)}
+def next_ref(on: date | None = Query(None, alias="date"), db=Depends(get_db)):
+    return {"ref_no": svc.suggest_ref(db, on)}
 
 
 @router.get("/amount-words")

@@ -29,10 +29,18 @@ def test_valid_token_yields_user_with_role():
     assert (user.id, user.email, user.role) == ("u1", "a@b.c", "admin")
 
 
-def test_role_defaults_to_user():
+def test_self_registered_account_without_role_rejected():
     token = jwt.encode({"sub": "u2", "exp": time.time() + 60, "aud": "authenticated"},
                        KEY, algorithm="ES256")
-    assert deps.decode_user(token).role == "user"
+    with pytest.raises(HTTPException) as e:
+        deps.decode_user(token)
+    assert e.value.status_code == 403
+
+
+def test_unknown_role_rejected():
+    with pytest.raises(HTTPException) as e:
+        deps.decode_user(make_token("superuser"))
+    assert e.value.status_code == 403
 
 
 def test_token_signed_by_other_key_rejected():

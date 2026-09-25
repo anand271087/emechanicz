@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { fromApiItems, subtotal, toApiItems, validateRows, type Row } from "./itemsLogic";
+import {
+  financialYear, fromApiItems, rowTotal, subtotal, toApiItems, validateRows, type Row,
+} from "./itemsLogic";
 
 const row = (description: string, qty = "", unit_price = "", joinAbove = false): Row => ({
   key: description, description, qty, unit_price, joinAbove,
@@ -34,6 +36,21 @@ describe("fromApiItems", () => {
     expect(rows.map((r) => r.joinAbove)).toEqual([false, true, false]);
     expect(rows[1].qty).toBe("1");
     expect(rows[0].qty).toBe("");
+  });
+});
+
+describe("rowTotal", () => {
+  it("rounds half-up to paise like the server", () => {
+    expect(rowTotal(row("A", "2.5", "0.01"))).toBe(0.03);
+    expect(rowTotal(row("A", "3", "0.1"))).toBe(0.3);
+    expect(rowTotal(row("A", "12", "137850"))).toBe(1654200);
+  });
+});
+
+describe("financialYear", () => {
+  it("splits at April", () => {
+    expect(financialYear("2027-03-31")).toBe("26-27");
+    expect(financialYear("2027-04-01")).toBe("27-28");
   });
 });
 

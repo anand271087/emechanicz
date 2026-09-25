@@ -1,4 +1,12 @@
-from datetime import date
+import re
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
+
+IST = ZoneInfo("Asia/Kolkata")
+
+
+def today_ist() -> date:
+    return datetime.now(IST).date()
 
 
 def financial_year(d: date) -> str:
@@ -11,9 +19,7 @@ def format_ref(prefix: str, seq: int, fy: str) -> str:
     return f"ETS/{prefix}{seq}/{fy}"
 
 
-def next_ref_state(state: dict, today: date) -> tuple[str, dict]:
-    """Next ref number from the stored sequence; restarts at 1 in a new FY."""
-    fy = financial_year(today)
-    seq = state["seq"] + 1 if state.get("fy") == fy else 1
-    new_state = {"prefix": state.get("prefix", "P"), "fy": fy, "seq": seq}
-    return format_ref(new_state["prefix"], seq, fy), new_state
+def parse_seq(ref_no: str, prefix: str, fy: str) -> int | None:
+    """Sequence number of a ref in the ETS/<prefix><n>/<fy> pattern, else None."""
+    m = re.fullmatch(rf"ETS/{re.escape(prefix)}(\d+)/{re.escape(fy)}", ref_no)
+    return int(m.group(1)) if m else None

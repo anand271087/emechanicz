@@ -26,7 +26,10 @@ key cannot read or write any table.
 1. **Database.** In the Supabase dashboard, open SQL Editor, paste the contents of
    `supabase/migrations/001_initial_schema.sql`, and run it. It creates the tables and default
    settings (company details, terms, and quote numbering starting after ETS/P301).
-2. **Backend**
+2. **Turn off public sign-ups.** Authentication → Sign In / Providers → turn off "Allow new users to
+   sign up". Team members are added by an admin under Settings. (The API also rejects any account
+   that an admin didn't create, but switch this off so strangers can't create accounts at all.)
+3. **Backend**
    ```bash
    cd backend
    cp .env.example .env        # then fill in the values below
@@ -34,7 +37,7 @@ key cannot read or write any table.
    .venv/bin/pip install -r requirements.txt
    .venv/bin/python -m scripts.seed_admin   # creates ADMIN_EMAIL / ADMIN_PASSWORD as admin
    ```
-3. **Frontend**
+4. **Frontend**
    ```bash
    cd frontend
    cp .env.example .env        # then fill in the values below
@@ -100,17 +103,17 @@ Line items support two special cases from existing quotations:
 The code is organised so each module is self-contained:
 
 1. **Database**: add `supabase/migrations/00N_<module>.sql` (enable RLS, no policies).
-2. **Backend**: `app/schemas/<module>.py` (request models), `app/services/<module>.py` (logic and data
+3. **Backend**: `app/schemas/<module>.py` (request models), `app/services/<module>.py` (logic and data
    access), `app/routers/<module>.py` (HTTP routes under `/api/v1/<module>`, with
    `Depends(get_current_user)`), then `app.include_router(...)` in `app/main.py`. Add tests in
    `backend/tests/` using `tests/fakes.py`.
-3. **Frontend**: pages in `src/modules/<module>/`, one entry in `src/modules/registry.tsx` (sidebar and
+4. **Frontend**: pages in `src/modules/<module>/`, one entry in `src/modules/registry.tsx` (sidebar and
    mobile tabs), and a route in `src/App.tsx`.
 
 ## Deploying
 
 - **Backend**: any Python host with Pango (Render, Railway, Fly.io, a VPS). Start command:
-  `uvicorn app.main:app --host 0.0.0.0 --port $PORT`. Set the backend env vars there and
+  `uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips="*"`. Set the backend env vars there and
   `CORS_ORIGINS` to the frontend URL.
 - **Frontend**: `npm run build` and host `frontend/dist` on Vercel or Netlify, with the three
   `VITE_*` variables set at build time. Configure the host to serve `index.html` for all routes.

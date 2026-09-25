@@ -1,6 +1,6 @@
 from datetime import date
 
-from app.services.ref_no import financial_year, next_ref_state
+from app.services.ref_no import financial_year, format_ref, parse_seq
 
 
 def test_fy_april_onward():
@@ -15,13 +15,11 @@ def test_fy_rolls_on_april_first():
     assert financial_year(date(2027, 4, 1)) == "27-28"
 
 
-def test_next_ref_increments():
-    ref, state = next_ref_state({"prefix": "P", "fy": "26-27", "seq": 301}, date(2026, 9, 25))
-    assert ref == "ETS/P302/26-27"
-    assert state["seq"] == 302
+def test_format_ref():
+    assert format_ref("P", 302, "26-27") == "ETS/P302/26-27"
 
 
-def test_next_ref_fy_rollover_resets_sequence():
-    ref, state = next_ref_state({"prefix": "P", "fy": "26-27", "seq": 301}, date(2027, 4, 1))
-    assert ref == "ETS/P1/27-28"
-    assert state == {"prefix": "P", "fy": "27-28", "seq": 1}
+def test_parse_seq_matches_only_same_prefix_and_fy():
+    assert parse_seq("ETS/P302/26-27", "P", "26-27") == 302
+    assert parse_seq("ETS/SS10/26-27", "P", "26-27") is None
+    assert parse_seq("ETS/P302/25-26", "P", "26-27") is None

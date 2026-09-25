@@ -8,6 +8,9 @@ from supabase import Client, create_client
 from app.config import settings
 
 
+ROLES = ("admin", "user")
+
+
 class CurrentUser(BaseModel):
     id: str
     email: str = ""
@@ -34,11 +37,11 @@ def decode_user(token: str) -> CurrentUser:
                             audience="authenticated")
     except jwt.PyJWTError as e:
         raise HTTPException(401, f"Invalid token: {e}")
-    return CurrentUser(
-        id=claims["sub"],
-        email=claims.get("email", ""),
-        role=(claims.get("app_metadata") or {}).get("role", "user"),
-    )
+    # Only accounts created by an admin carry a role; self sign-ups via the public key do not.
+    role = (claims.get("app_metadata") or {}).get("role")
+    if role not in ROLES:
+        raise HTTPException(403, "This account hasn't been given access. Ask your admin to add you.")
+    return CurrentUser(id=claims["sub"], email=claims.get("email", ""), role=role)
 
 
 def get_current_user(authorization: str = Header("")) -> CurrentUser:

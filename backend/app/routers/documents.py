@@ -21,7 +21,10 @@ def _attachment(content: bytes, media_type: str, filename: str) -> Response:
 
 @router.get("/{qid}/html", response_class=HTMLResponse)
 def preview_html(qid: str, request: Request, db=Depends(get_db)):
-    static_url = str(request.base_url).rstrip("/") + "/static"
+    # Behind an HTTPS proxy the app sees plain http; an http logo URL would be blocked in the https page.
+    scheme = request.headers.get("x-forwarded-proto", request.url.scheme).split(",")[0].strip()
+    host = request.headers.get("x-forwarded-host", request.url.netloc)
+    static_url = f"{scheme}://{host}/static"
     return render_quote_html(fetch_quote(db, qid), get_setting(db, "company"), static_url)
 
 

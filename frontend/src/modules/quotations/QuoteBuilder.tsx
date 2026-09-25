@@ -7,12 +7,14 @@ import { api, ApiError, post, put } from "../../lib/api";
 import type { AppSettings, Customer, Quote, QuoteIn } from "../../lib/types";
 import CustomerForm from "../customers/CustomerForm";
 import ItemsEditor from "./ItemsEditor";
-import { fromApiItems, newRow, subtotal, toApiItems, validateRows, type Row } from "./itemsLogic";
+import {
+  financialYear, fromApiItems, newRow, subtotal, toApiItems, validateRows, type Row,
+} from "./itemsLogic";
 import TermsEditor from "./TermsEditor";
 
 type Form = Omit<QuoteIn, "items">;
 
-const today = () => new Date().toLocaleDateString("en-CA");
+const today = () => new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
 
 export default function QuoteBuilder() {
   const { id } = useParams();
@@ -29,6 +31,7 @@ export default function QuoteBuilder() {
   const [saving, setSaving] = useState(false);
   const [words, setWords] = useState("");
   const [addingCustomer, setAddingCustomer] = useState(false);
+  const [refTouched, setRefTouched] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -68,6 +71,18 @@ export default function QuoteBuilder() {
   if (!form || !settings) return <Spinner />;
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm({ ...form, [k]: v });
+
+  async function changeDate(quote_date: string) {
+    setForm({ ...form!, quote_date });
+    const fyChanged = quote_date && !form!.ref_no.endsWith(`/${financialYear(quote_date)}`);
+    if (id || refTouched || !fyChanged) return;
+    try {
+      const { ref_no } = await api<{ ref_no: string }>(`/api/v1/quotes/next-ref?date=${quote_date}`);
+      setForm((f) => (f ? { ...f, ref_no } : f));
+    } catch {
+      /* keep the current ref; saving will report any conflict */
+    }
+  }
 
   function pickCustomer(cid: string, list = customers) {
     const prev = list.find((c) => c.id === form!.customer_id);
@@ -135,11 +150,12 @@ export default function QuoteBuilder() {
             </div>
             <div className="grid grid-cols-2 gap-3 self-start">
               <Field label="Ref no" className="col-span-2" hint="Suggested automatically. You can change it.">
-                {(fid) => <Input id={fid} value={form.ref_no} onChange={(e) => set("ref_no", e.target.value)} />}
+                {(fid) => <Input id={fid} value={form.ref_no}
+                  onChange={(e) => { setRefTouched(true); set("ref_no", e.target.value); }} />}
               </Field>
               <Field label="Date">
                 {(fid) => <Input id={fid} type="date" value={form.quote_date}
-                  onChange={(e) => set("quote_date", e.target.value)} />}
+                  onChange={(e) => changeDate(e.target.value)} />}
               </Field>
               <Field label="Issue status">
                 {(fid) => <Input id={fid} value={form.issue_status}
@@ -171,7 +187,7 @@ export default function QuoteBuilder() {
             {errors.map((e) => <p key={e}>{e}</p>)}
             {suggestedRef && (
               <Button variant="secondary" className="mt-2"
-                onClick={() => { set("ref_no", suggestedRef); setErrors([]); setSuggestedRef(""); }}>
+                onClick={() => { set("ref_no", suggestedRef); setRefTouched(false); setErrors([]); setSuggestedRef(""); }}>
                 Use {suggestedRef}
               </Button>
             )}

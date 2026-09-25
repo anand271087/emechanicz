@@ -51,10 +51,20 @@ export function fromApiItems(items: QuoteItemIn[]): Row[] {
   );
 }
 
+/** qty × price in paise-exact integer maths, rounded half-up like the server. */
 export function rowTotal(r: Row): number | null {
   const q = num(r.qty);
   const p = num(r.unit_price);
-  return q === null || p === null || Number.isNaN(q) || Number.isNaN(p) ? null : q * p;
+  if (q === null || p === null || Number.isNaN(q) || Number.isNaN(p)) return null;
+  const hundredthsSquared = Math.round(q * 100) * Math.round(p * 100);
+  return Math.round(hundredthsSquared / 100) / 100;
+}
+
+export function financialYear(iso: string): string {
+  const [y, m] = iso.split("-").map(Number);
+  const start = m >= 4 ? y : y - 1;
+  const yy = (n: number) => String(n % 100).padStart(2, "0");
+  return `${yy(start)}-${yy(start + 1)}`;
 }
 
 export function subtotal(rows: Row[]): number {
