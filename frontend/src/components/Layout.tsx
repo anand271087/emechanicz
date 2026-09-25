@@ -9,7 +9,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-dvh md:flex">
-      <aside className="hidden w-60 shrink-0 flex-col bg-navy-deep text-white md:flex">
+      <aside className="hidden w-60 shrink-0 flex-col bg-navy-deep text-white md:sticky md:top-0 md:flex md:h-dvh">
         <div className="flex items-center gap-3 px-5 py-5">
           <img src="/logo.png" alt="" className="size-10 rounded-full bg-white p-0.5" />
           <div className="leading-tight">
