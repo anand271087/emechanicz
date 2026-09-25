@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
-from app.routers import customers, documents, email, quotes
+from app.routers import admin, customers, documents, email, quotes
 from app.services.pdf import STATIC_DIR
 
 app = FastAPI(title="eMechanicz CRM API")
@@ -20,6 +20,7 @@ app.include_router(customers.router)
 app.include_router(quotes.router)
 app.include_router(documents.router)
 app.include_router(email.router)
+app.include_router(admin.router)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
