@@ -37,4 +37,4 @@ ORDINAL_RE = re.compile(r"\b(\d+)(st|nd|rd|th)\b")
 def download_name(quote: dict, ext: str) -> str:
     company = (quote.get("customers") or {}).get("company_name", "")
     raw = f"Quote-{quote['ref_no'].replace('/', '-')}-{company}".strip("-")
-    return re.sub(r"[^A-Za-z0-9 ._-]", "", raw).strip() + f".{ext}"
+    return re.sub(r"[^A-Za-z0-9 ._-]", "", raw).strip().rstrip(".") + f".{ext}"
