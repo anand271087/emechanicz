@@ -11,3 +11,6 @@ dist/
 
 # Customer quotation PDFs saved in the project root
 /*.pdf
+
+# Vite dependency cache
+.vite/
