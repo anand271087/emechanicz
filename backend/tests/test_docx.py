@@ -12,7 +12,8 @@ def _doc():
 
 
 def _all_text(doc):
-    paras = [p.text for p in doc.paragraphs]
+    section = doc.sections[0]
+    paras = [p.text for p in doc.paragraphs + section.header.paragraphs + section.footer.paragraphs]
     cells = [c.text for t in doc.tables for r in t.rows for c in r.cells]
     return "\n".join(paras + cells)
 

@@ -7,7 +7,17 @@
   @font-face { font-family: "Carlito"; font-weight: 400; src: url("{{ static }}/fonts/Carlito-Regular.ttf"); }
   @font-face { font-family: "Carlito"; font-weight: 700; src: url("{{ static }}/fonts/Carlito-Bold.ttf"); }
 
-  @page { size: A4; margin: 34pt 46pt 36pt 46pt; }
+  /* Letterhead: logo header and company footer repeat on every page. */
+  @page {
+    size: A4;
+    margin: 82pt 46pt 78pt 46pt;
+    @top-right { content: element(pageHeader); vertical-align: bottom; padding-bottom: 8pt; }
+    @bottom-center { content: element(pageFooter); vertical-align: middle; }
+  }
+  @page :first {
+    @top-left { content: "Quotation"; font-family: "Carlito", Calibri, sans-serif; font-size: 18pt;
+                font-weight: 700; vertical-align: bottom; padding-bottom: 12pt; }
+  }
 
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -15,15 +25,14 @@
          color: #000; line-height: 1.25; }
   .page { width: 503pt; }
 
-  .head { position: relative; height: 58pt; }
-  .head h1 { position: absolute; left: 2pt; top: 20pt; margin: 0; font-size: 18pt; font-weight: 700; }
-  .head img { position: absolute; left: 366pt; top: 14pt; width: 52pt; height: 49pt; }
+  .page-header { position: running(pageHeader); text-align: right; }
+  .page-header img { width: 52pt; height: 49pt; }
+  .title { display: none; margin: 0; font-size: 18pt; font-weight: 700; }
 
   table { border-collapse: collapse; }
   .info { width: 100%; }
   .info td { padding: 0; height: 13.6pt; vertical-align: bottom; }
-  .info .lbl { width: 62pt; text-align: right; padding-right: 3pt; white-space: nowrap; }
-  .info .val { width: 148pt; white-space: nowrap; }
+  .info .right { text-align: right; white-space: nowrap; padding-left: 12pt; }
   .intro { margin: 1pt 0 0 0; font-size: 10.8pt; }
   .intro p { margin: 0; line-height: 1.35; }
 
@@ -53,7 +62,7 @@
   .sign .gap { height: 20pt; }
   .sign .note { padding-left: 57pt; }
 
-  .footer { margin-top: 18pt; text-align: center; color: #17365D; line-height: 1.4; }
+  .page-footer { position: running(pageFooter); text-align: center; color: #17365D; line-height: 1.4; }
   .footer .name { font-size: 9.3pt; letter-spacing: 0.2pt; }
   .footer .addr { font-size: 9pt; }
   .footer .contact { font-size: 9.9pt; }
@@ -62,23 +71,33 @@
 
   @media screen {
     body { background: #fff; }
-    .page { width: 210mm; min-height: 297mm; padding: 34pt 46pt 36pt 46pt; margin: 0 auto; }
+    .sheet { position: relative; display: flex; flex-direction: column; width: 210mm; min-height: 297mm;
+             padding: 82pt 46pt 24pt 46pt; margin: 0 auto; }
+    .page-header { position: absolute; top: 25pt; right: 46pt; }
+    .title { display: block; position: absolute; top: 48pt; left: 46pt; }
+    .page { order: 1; }
+    .page-footer { order: 2; margin-top: auto; padding-top: 24pt; }
   }
 </style>
 </head>
 <body>
+<div class="sheet">
+<div class="page-header"><img src="{{ static }}/logo.png" alt="EMechanicz"></div>
+<div class="page-footer footer">
+  <div class="name">{{ c.name }},</div>
+  <div class="addr">{{ c.footer_address | ordinals }}</div>
+  <div class="contact">M {{ c.phone }} - E: {{ c.emails }}</div>
+  <div class="gst">GST NO: {{ c.gst_no }}</div>
+</div>
+<h1 class="title">Quotation</h1>
+
 <div class="page">
-  <div class="head">
-    <h1>Quotation</h1>
-    <img src="{{ static }}/logo.png" alt="EMechanicz">
-  </div>
 
   {% set intro_lines = (q.intro or "").split("\n") %}
   <table class="info">
-    <tr><td colspan="3">Customer : {{ customer.company_name }}</td></tr>
-    <tr><td>Kind Attn : {{ q.kind_attn }}</td><td class="lbl">ETS Ref No :</td><td class="val">{{ q.ref_no }}</td></tr>
-    <tr><td></td><td class="lbl">Issue Status :</td><td class="val">{{ q.issue_status }}</td></tr>
-    <tr><td>{{ intro_lines[0] }}</td><td class="lbl">Date :</td><td class="val">{{ q.quote_date | date }}</td></tr>
+    <tr><td>Customer : {{ customer.company_name }}</td><td class="right">ETS Ref No : {{ q.ref_no }}</td></tr>
+    <tr><td>Kind Attn : {{ q.kind_attn }}</td><td class="right">Issue Status : {{ q.issue_status }}</td></tr>
+    <tr><td>{{ intro_lines[0] }}</td><td class="right">Date : {{ q.quote_date | date }}</td></tr>
   </table>
   {% if intro_lines | length > 1 %}
   <div class="intro">{% for line in intro_lines[1:] %}<p>{{ line }}</p>{% endfor %}</div>
@@ -129,14 +148,8 @@
     <div class="gap"></div>
     <p>Authorised Signatory</p>
     {% if c.system_generated_note %}<p class="note">{{ c.system_generated_note }}</p>{% endif %}
-
-    <div class="footer">
-      <div class="name">{{ c.name }},</div>
-      <div class="addr">{{ c.footer_address | ordinals }}</div>
-      <div class="contact">M {{ c.phone }} - E: {{ c.emails }}</div>
-      <div class="gst">GST NO: {{ c.gst_no }}</div>
-    </div>
   </div>
+</div>
 </div>
 </body>
 </html>
