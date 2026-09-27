@@ -6,6 +6,8 @@ from supabase import create_client
 
 from app.config import settings
 
+ADMIN_NAME = "Admin"
+
 
 def main() -> None:
     if not settings.admin_password:
@@ -16,14 +18,17 @@ def main() -> None:
         if (existing.app_metadata or {}).get("role") != "admin":
             sb.auth.admin.update_user_by_id(existing.id, {"app_metadata": {"role": "admin"}})
             print(f"Promoted existing user {settings.admin_email} to admin")
-        else:
-            print(f"Admin {settings.admin_email} already exists")
+        if not (existing.user_metadata or {}).get("name"):
+            sb.auth.admin.update_user_by_id(existing.id, {"user_metadata": {"name": ADMIN_NAME}})
+            print(f"Named {settings.admin_email} \"{ADMIN_NAME}\"")
+        print(f"Admin {settings.admin_email} is set up")
         return
     sb.auth.admin.create_user({
         "email": settings.admin_email,
         "password": settings.admin_password,
         "email_confirm": True,
         "app_metadata": {"role": "admin"},
+        "user_metadata": {"name": ADMIN_NAME},
     })
     print(f"Created admin {settings.admin_email} — change the password after first login")
 

@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import TypeAdapter, ValidationError
 
 from app.deps import CurrentUser, get_current_user, get_db, require_admin
-from app.schemas.settings import SETTING_MODELS, SettingIn, UserIn
+from app.schemas.settings import SETTING_MODELS, SettingIn, UserIn, UserNameIn
+from app.services.users import member_name
 from app.services.app_settings import set_setting
 
 router = APIRouter(prefix="/api/v1", tags=["admin"])
@@ -34,7 +35,8 @@ def update_setting(key: str, body: SettingIn, db=Depends(get_db),
 
 
 def _user_out(u) -> dict:
-    return {"id": u.id, "email": u.email, "role": (u.app_metadata or {}).get("role", "user"),
+    return {"id": u.id, "email": u.email, "name": member_name(u),
+            "role": (u.app_metadata or {}).get("role", "user"),
             "created_at": str(u.created_at) if u.created_at else None,
             "last_sign_in_at": str(u.last_sign_in_at) if u.last_sign_in_at else None}
 
@@ -49,7 +51,16 @@ def create_user(body: UserIn, db=Depends(get_db), admin: CurrentUser = Depends(r
     try:
         res = db.auth.admin.create_user({"email": body.email, "password": body.password,
                                          "email_confirm": True,
-                                         "app_metadata": {"role": body.role}})
+                                         "app_metadata": {"role": body.role},
+                                         "user_metadata": {"name": body.name.strip()}})
     except Exception as e:
         raise HTTPException(400, f"Could not create user: {e}")
+    return _user_out(res.user)
+
+
+@router.put("/users/{uid}")
+def rename_user(uid: str, body: UserNameIn, db=Depends(get_db), admin: CurrentUser = Depends(require_admin)):
+    if not any(u.id == uid for u in db.auth.admin.list_users()):
+        raise HTTPException(404, "Team member not found")
+    res = db.auth.admin.update_user_by_id(uid, {"user_metadata": {"name": body.name.strip()}})
     return _user_out(res.user)

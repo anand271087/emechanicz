@@ -72,6 +72,7 @@ export default function QuoteList() {
                 <th className="px-4 py-2.5 font-semibold">Ref no</th>
                 <th className="px-4 py-2.5 font-semibold">Customer</th>
                 <th className="px-4 py-2.5 font-semibold">Date</th>
+                <th className="px-4 py-2.5 font-semibold">Created by</th>
                 <th className="px-4 py-2.5 text-right font-semibold">Total (INR)</th>
                 <th className="px-4 py-2.5 font-semibold">Status</th>
                 <th className="px-4 py-2.5"><span className="sr-only">Actions</span></th>
@@ -83,6 +84,7 @@ export default function QuoteList() {
                   <td className="px-4 py-3"><Link to={`/quotes/${q.id}`}><RefBlock refNo={q.ref_no} size="sm" /></Link></td>
                   <td className="px-4 py-3 font-medium">{q.customers?.company_name}</td>
                   <td className="px-4 py-3 text-muted">{formatDate(q.quote_date)}</td>
+                  <td className="px-4 py-3 text-muted">{q.created_by_name}</td>
                   <td className="px-4 py-3 text-right font-semibold">{formatINR(q.subtotal)}</td>
                   <td className="px-4 py-3"><StatusBadge status={q.status} /></td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
@@ -104,7 +106,7 @@ export default function QuoteList() {
                   </div>
                   <p className="mt-2 font-semibold">{q.customers?.company_name}</p>
                   <div className="mt-0.5 flex justify-between text-sm text-muted">
-                    <span>{formatDate(q.quote_date)}</span>
+                    <span>{formatDate(q.quote_date)}, by {q.created_by_name}</span>
                     <span className="font-semibold text-ink">₹ {formatINR(q.subtotal)}</span>
                   </div>
                 </Link>

@@ -4,7 +4,7 @@ from datetime import date, datetime, timezone
 from fastapi import HTTPException
 
 from app.schemas.quote import QuoteIn, QuoteItemIn
-from app.services import item_descriptions
+from app.services import item_descriptions, users
 from app.services.amount_words import amount_in_words
 from app.services.app_settings import get_setting, set_setting
 from app.services.quote_logic import compute_totals
@@ -62,6 +62,9 @@ def list_quotes(db, search: str = "", status: str = "") -> list[dict]:
     if status:
         q = q.eq("status", status)
     rows = q.limit(500).execute().data
+    names = users.directory(db)
+    for r in rows:
+        r["created_by_name"] = users.creator_name(names, r.get("created_by"))
     if search:
         s = search.lower()
         rows = [r for r in rows if s in r["ref_no"].lower()

@@ -4,6 +4,7 @@ import Layout from "./components/Layout";
 import { Spinner, ToastProvider } from "./components/ui";
 import { AuthProvider, useAuth } from "./lib/auth";
 import Customers from "./modules/customers/Customers";
+import Dashboard from "./modules/dashboard/Dashboard";
 import Items from "./modules/items/Items";
 import QuoteBuilder from "./modules/quotations/QuoteBuilder";
 import QuoteList from "./modules/quotations/QuoteList";
@@ -30,6 +31,7 @@ export default function App() {
               <Route path="/quotes/new" element={<QuoteBuilder />} />
               <Route path="/quotes/:id" element={<QuotePreview />} />
               <Route path="/quotes/:id/edit" element={<QuoteBuilder />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/customers" element={<Customers />} />
               <Route path="/items" element={<Items />} />
               <Route path="/settings" element={<Settings />} />

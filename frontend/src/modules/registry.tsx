@@ -14,6 +14,8 @@ const icon = (d: string) => (
 );
 
 export const MODULES: CrmModule[] = [
+  { path: "/dashboard", label: "Dashboard", adminOnly: true,
+    icon: icon("M4 20V10M10 20V4M16 20v-7M22 20H2") },
   { path: "/quotes", label: "Quotations",
     icon: icon("M7 3h7l5 5v13H7zM14 3v5h5M10 12h6M10 16h6") },
   { path: "/items", label: "Items",

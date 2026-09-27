@@ -67,7 +67,8 @@ export function StatusBadge({ status }: { status: QuoteStatus }) {
 export function RefBlock({ refNo, issue, size = "md" }: { refNo: string; issue?: string; size?: "sm" | "md" }) {
   const text = size === "sm" ? "text-sm" : "text-base";
   return (
-    <span className={`inline-flex items-stretch overflow-hidden rounded-[3px] border border-navy/70 ${text}`}>
+    <span className={`inline-flex shrink-0 items-stretch overflow-hidden whitespace-nowrap rounded-[3px] border
+      border-navy/70 ${text}`}>
       <span className="bg-navy px-2 py-0.5 font-semibold tracking-wide text-white">{refNo}</span>
       {issue && <span className="bg-white px-1.5 py-0.5 font-medium text-navy">Rev {issue}</span>}
     </span>

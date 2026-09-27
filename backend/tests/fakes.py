@@ -24,7 +24,7 @@ class FakeQuery:
     def __init__(self, db, table):
         self.db, self.table = db, table
         self.op, self.payload, self.embeds = "select", None, []
-        self.filters, self._order, self._limit = [], None, None
+        self.filters, self._order, self._limit, self._offset = [], None, None, 0
 
     def select(self, cols="*"):
         self.embeds = re.findall(r"(\w+)\(([^)]*)\)", cols)
@@ -53,6 +53,14 @@ class FakeQuery:
 
     def neq(self, col, val):
         self.filters.append(lambda r: str(r.get(col)) != str(val))
+        return self
+
+    def gte(self, col, val):
+        self.filters.append(lambda r: r.get(col) is not None and str(r.get(col)) >= str(val))
+        return self
+
+    def range(self, start, end):
+        self._offset, self._limit = start, end - start + 1
         return self
 
     def in_(self, col, values):
@@ -128,8 +136,51 @@ class FakeQuery:
                 col, desc = self._order
                 data.sort(key=lambda r: str(r.get(col, "")), reverse=desc)
             if self._limit is not None:
-                data = data[: self._limit]
+                data = data[self._offset: self._offset + self._limit]
         return SimpleNamespace(data=copy.deepcopy(data))
+
+
+class FakeUser(SimpleNamespace):
+    def __init__(self, id, email, name="", role="user"):
+        super().__init__(id=id, email=email, user_metadata={"name": name} if name else {},
+                         app_metadata={"role": role}, created_at="2026-09-25", last_sign_in_at=None)
+
+
+class FakeAuthAdmin:
+    def __init__(self):
+        self.users: list[FakeUser] = []
+
+    def list_users(self, page=None, per_page=None):
+        return list(self.users)
+
+    def create_user(self, attrs):
+        user = FakeUser(f"u{len(self.users) + 100}", attrs["email"], role=attrs["app_metadata"]["role"])
+        user.user_metadata = dict(attrs.get("user_metadata") or {})
+        self.users.append(user)
+        return SimpleNamespace(user=user)
+
+    def update_user_by_id(self, uid, attrs):
+        user = next((u for u in self.users if u.id == uid), None)
+        if user is None:
+            raise RuntimeError("User not found")
+        if "user_metadata" in attrs:
+            user.user_metadata = {**user.user_metadata, **attrs["user_metadata"]}
+        return SimpleNamespace(user=user)
+
+
+class FakeAuth:
+    """db.auth with db.auth.users as a shortcut to the admin user list."""
+
+    def __init__(self):
+        self.admin = FakeAuthAdmin()
+
+    @property
+    def users(self):
+        return self.admin.users
+
+    @users.setter
+    def users(self, value):
+        self.admin.users = value
 
 
 class FakeDB:
@@ -137,6 +188,7 @@ class FakeDB:
         self.tables = {"customers": [], "quotes": [], "quote_items": [], "app_settings": [],
                        "item_descriptions": []}
         self.fail_on = None
+        self.auth = FakeAuth()
         self.seed_settings()
 
     def table(self, name):

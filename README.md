@@ -106,6 +106,13 @@ The Items page can add items one at a time or upload an Excel list (`frontend/pu
 uploads only append, skipping items already in the list (any upper/lower case), repeats and blank rows.
 Typos can be fixed or removed there too.
 
+## Dashboard (admins only)
+
+Shows who created how many quotations and their value for Today, Last 30 days, This quarter and
+This year. Quarters and years follow the Indian financial year (Apr–Mar), and days are counted in
+India time. It also lists top customers, the latest 10 quotations and, for the year, quotations per
+month. Team member names come from Settings → Team members; anyone without a name shows as their email.
+
 ## Adding a new CRM module
 
 The code is organised so each module is self-contained:

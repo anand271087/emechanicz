@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
-from app.routers import admin, customers, documents, email, item_descriptions, quotes
+from app.routers import admin, customers, dashboard, documents, email, item_descriptions, quotes
 from app.services.pdf import STATIC_DIR
 
 log = logging.getLogger("emechanicz")
@@ -41,6 +41,7 @@ app.include_router(documents.router)
 app.include_router(email.router)
 app.include_router(admin.router)
 app.include_router(item_descriptions.router)
+app.include_router(dashboard.router)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 

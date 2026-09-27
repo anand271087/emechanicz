@@ -1,5 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from "react";
-import { Button, ErrorNote, Field, Input, PageHeader, Panel, Select, Spinner, Textarea, useToast } from "../../components/ui";
+import { Button, ErrorNote, Field, Input, Modal, PageHeader, Panel, Select, Spinner, Textarea, useToast } from "../../components/ui";
 import { api, post, put } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
 import { supabase } from "../../lib/supabase";
@@ -171,10 +171,13 @@ function DefaultsForm({ intro, terms, onSaved }: { intro: string; terms: string[
 }
 
 function Users() {
+  const toast = useToast();
   const { data, error, reload } = useLoad(() => api<AppUser[]>("/api/v1/users"), []);
-  const [form, setForm] = useState({ email: "", password: "", role: "user" });
-  const { busy, error: saveError, save } = useSave("User", () => {
-    setForm({ email: "", password: "", role: "user" });
+  const empty = { name: "", email: "", password: "", role: "user" };
+  const [form, setForm] = useState(empty);
+  const [renaming, setRenaming] = useState<AppUser | null>(null);
+  const { busy, error: saveError, save } = useSave("Team member", () => {
+    setForm(empty);
     reload();
   });
 
@@ -185,24 +188,36 @@ function Users() {
         <ul className="mb-5 divide-y divide-line rounded-md border border-line">
           {data.map((u) => (
             <li key={u.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5">
-              <span className="font-medium">{u.email}</span>
-              <span className="text-sm text-muted">
-                {u.role === "admin" ? "Admin" : "Sales"}
-                {u.last_sign_in_at ? `, last signed in ${new Date(u.last_sign_in_at).toLocaleDateString("en-IN")}`
-                  : ", hasn't signed in yet"}
+              <span className="min-w-0">
+                <span className="block font-medium">{u.name || <span className="text-muted">No name yet</span>}</span>
+                <span className="block text-sm text-muted">{u.email}</span>
+              </span>
+              <span className="flex items-center gap-4 text-sm text-muted">
+                <span>
+                  {u.role === "admin" ? "Admin" : "Sales"}
+                  {u.last_sign_in_at ? `, last signed in ${new Date(u.last_sign_in_at).toLocaleDateString("en-IN")}`
+                    : ", hasn't signed in yet"}
+                </span>
+                <button onClick={() => setRenaming(u)} className="font-medium text-navy hover:underline">
+                  {u.name ? "Edit name" : "Add name"}
+                </button>
               </span>
             </li>
           ))}
         </ul>
       )}
-      <form className="grid gap-3 sm:grid-cols-[1fr_1fr_9rem_auto] sm:items-end"
+      <form className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_8rem_auto] lg:items-end"
         onSubmit={(e) => { e.preventDefault(); save(() => post("/api/v1/users", form)); }}>
+        <Field label="Name">
+          {(id) => <Input id={id} required value={form.name} autoComplete="off"
+            onChange={(e) => setForm({ ...form, name: e.target.value })} />}
+        </Field>
         <Field label="Email">
-          {(id) => <Input id={id} type="email" required value={form.email}
+          {(id) => <Input id={id} type="email" required value={form.email} autoComplete="off"
             onChange={(e) => setForm({ ...form, email: e.target.value })} />}
         </Field>
         <Field label="Starting password">
-          {(id) => <Input id={id} type="text" required minLength={8} value={form.password}
+          {(id) => <Input id={id} type="text" required minLength={8} value={form.password} autoComplete="off"
             onChange={(e) => setForm({ ...form, password: e.target.value })} />}
         </Field>
         <Field label="Role">
@@ -217,6 +232,43 @@ function Users() {
       </form>
       {saveError && <div className="mt-3"><ErrorNote message={saveError} /></div>}
       <p className="mt-2 text-sm text-muted">Share the starting password with them; they can change it here after signing in.</p>
+
+      <Modal open={renaming !== null} onClose={() => setRenaming(null)} title={`Name for ${renaming?.email ?? ""}`}>
+        {renaming && <RenameForm key={renaming.id} user={renaming} onCancel={() => setRenaming(null)}
+          onSaved={(name) => { toast(`Saved name "${name}"`); setRenaming(null); reload(); }} />}
+      </Modal>
     </Panel>
+  );
+}
+
+function RenameForm({ user, onSaved, onCancel }: { user: AppUser; onSaved: (name: string) => void; onCancel: () => void }) {
+  const [name, setName] = useState(user.name);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function submit() {
+    setBusy(true);
+    setError("");
+    try {
+      const saved = await put<AppUser>(`/api/v1/users/${user.id}`, { name });
+      onSaved(saved.name);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); submit(); }} className="space-y-3">
+      <Field label="Name" hint="Shown on the dashboard and next to the quotations they create.">
+        {(id) => <Input id={id} required value={name} onChange={(e) => setName(e.target.value)} autoFocus />}
+      </Field>
+      {error && <ErrorNote message={error} />}
+      <div className="flex justify-end gap-2">
+        <Button type="button" variant="secondary" onClick={onCancel}>Cancel</Button>
+        <Button type="submit" busy={busy}>Save name</Button>
+      </div>
+    </form>
   );
 }

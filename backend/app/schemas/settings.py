@@ -36,3 +36,8 @@ class UserIn(BaseModel):
     email: str = Field(pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
     password: str = Field(min_length=8)
     role: Literal["admin", "user"] = "user"
+    name: str = Field("", max_length=80)
+
+
+class UserNameIn(BaseModel):
+    name: str = Field(max_length=80)

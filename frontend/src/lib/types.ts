@@ -49,6 +49,7 @@ export interface Quote extends Omit<QuoteIn, "items"> {
 
 export interface QuoteSummary extends Omit<Quote, "customers" | "quote_items"> {
   customers: { company_name: string } | null;
+  created_by_name: string;
 }
 
 export interface CompanySettings {
@@ -85,6 +86,7 @@ export interface EmailDraft {
 export interface AppUser {
   id: string;
   email: string;
+  name: string;
   role: "admin" | "user";
   created_at: string | null;
   last_sign_in_at: string | null;
@@ -102,4 +104,25 @@ export interface ItemImportResult {
   already_in_list: number;
   repeated_in_file: number;
   blank_rows: number;
+}
+
+export type DashboardPeriod = "today" | "30d" | "quarter" | "year";
+
+export interface DashboardQuote {
+  id: string;
+  ref_no: string;
+  customer: string;
+  created_at: string;
+  value: number;
+  created_by_name: string;
+}
+
+export interface DashboardData {
+  period: DashboardPeriod;
+  label: string;
+  totals: { quotations: number; value: number; average: number };
+  by_person: { user_id: string; name: string; quotations: number; value: number; quotes: DashboardQuote[] }[];
+  top_customers: { name: string; quotations: number; value: number }[];
+  recent: DashboardQuote[];
+  monthly: { month: string; label: string; quotations: number; value: number }[];
 }
