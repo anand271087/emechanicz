@@ -39,7 +39,7 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
     res = await fetch(`${API_BASE}${path}`, {
       ...init,
       headers: {
-        ...(init.body ? { "Content-Type": "application/json" } : {}),
+        ...(typeof init.body === "string" ? { "Content-Type": "application/json" } : {}),
         ...(await authHeader()),
         ...init.headers,
       },
@@ -69,6 +69,13 @@ export const put = <T>(path: string, body: unknown) =>
   api<T>(path, { method: "PUT", body: JSON.stringify(body) });
 
 export const del = (path: string) => api<void>(path, { method: "DELETE" });
+
+/** POST a file as multipart form data under the field name "file". */
+export function uploadFile<T>(path: string, file: File): Promise<T> {
+  const form = new FormData();
+  form.append("file", file);
+  return api<T>(path, { method: "POST", body: form });
+}
 
 /** Download an authenticated file, using the server's filename. */
 export async function downloadFile(path: string): Promise<void> {

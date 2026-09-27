@@ -24,7 +24,7 @@ key cannot read or write any table.
 ## First-time setup
 
 1. **Database.** In the Supabase dashboard, open SQL Editor and run each file in
-   `supabase/migrations/` in order (`001_…`, then `002_…`). It creates the tables and default
+   `supabase/migrations/` in order (`001_…`, `002_…`, `003_…`). It creates the tables and default
    settings (company details, terms, and quote numbering starting after ETS/P301).
 2. **Turn off public sign-ups.** Authentication → Sign In / Providers → turn off "Allow new users to
    sign up". Team members are added by an admin under Settings. (The API also rejects any account
@@ -101,7 +101,10 @@ Line items support two special cases from existing quotations:
 Item descriptions are remembered: the Description box suggests up to 5 saved descriptions (most
 recently used first; typing filters them, ignoring upper/lower case, with those that start with your
 text listed first). New descriptions are added when a quotation is saved, downloaded or emailed.
-Typos can be fixed or removed on the Items page.
+Descriptions are saved with a capital first letter, on the quotation and in the list.
+The Items page can add items one at a time or upload an Excel list (`frontend/public/items-template.xlsx`);
+uploads only append, skipping items already in the list (any upper/lower case), repeats and blank rows.
+Typos can be fixed or removed there too.
 
 ## Adding a new CRM module
 

@@ -2,6 +2,8 @@ from datetime import date
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from app.services.item_descriptions import capitalize_first
+
 
 class QuoteItemIn(BaseModel):
     sl_no: int
@@ -9,6 +11,11 @@ class QuoteItemIn(BaseModel):
     qty: float | None = Field(None, ge=0)
     unit_price: float | None = Field(None, ge=0)
     group_id: int | None = None
+
+    @field_validator("description")
+    @classmethod
+    def first_letter_capital(cls, v: str) -> str:
+        return capitalize_first(v)
 
     @model_validator(mode="after")
     def qty_and_price_together(self):

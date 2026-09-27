@@ -96,3 +96,10 @@ export interface ItemDescription {
   description_key: string;
   last_used_at: string;
 }
+
+export interface ItemImportResult {
+  added: number;
+  already_in_list: number;
+  repeated_in_file: number;
+  blank_rows: number;
+}
