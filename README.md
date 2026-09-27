@@ -23,8 +23,8 @@ key cannot read or write any table.
 
 ## First-time setup
 
-1. **Database.** In the Supabase dashboard, open SQL Editor, paste the contents of
-   `supabase/migrations/001_initial_schema.sql`, and run it. It creates the tables and default
+1. **Database.** In the Supabase dashboard, open SQL Editor and run each file in
+   `supabase/migrations/` in order (`001_…`, then `002_…`). It creates the tables and default
    settings (company details, terms, and quote numbering starting after ETS/P301).
 2. **Turn off public sign-ups.** Authentication → Sign In / Providers → turn off "Allow new users to
    sign up". Team members are added by an admin under Settings. (The API also rejects any account
@@ -97,6 +97,11 @@ Company details, default terms, and numbering are edited in the app under Settin
 Line items support two special cases from existing quotations:
 - **Description-only rows**: leave qty and price blank (e.g. "Documentation & Training").
 - **Shared price**: tick "Share one price with the row above" to merge rows under one qty/price cell.
+
+Item descriptions are remembered: the Description box suggests up to 5 saved descriptions (most
+recently used first; typing filters them, ignoring upper/lower case, with those that start with your
+text listed first). New descriptions are added when a quotation is saved, downloaded or emailed.
+Typos can be fixed or removed on the Items page.
 
 ## Adding a new CRM module
 

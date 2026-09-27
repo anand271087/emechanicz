@@ -89,3 +89,10 @@ export interface AppUser {
   created_at: string | null;
   last_sign_in_at: string | null;
 }
+
+export interface ItemDescription {
+  id: string;
+  description: string;
+  description_key: string;
+  last_used_at: string;
+}

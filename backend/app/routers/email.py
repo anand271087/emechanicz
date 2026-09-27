@@ -8,7 +8,7 @@ from app.services.docx_gen import quote_docx
 from app.services.formatting import download_name
 from app.services.mailer import MailError, MailNotConfigured, send_mail
 from app.services.pdf import quote_pdf
-from app.services.quotes import fetch_quote, mark_sent
+from app.services.quotes import fetch_quote, mark_sent, remember_descriptions
 
 router = APIRouter(prefix="/api/v1/quotes", tags=["email"])
 
@@ -46,4 +46,5 @@ def send_quote_email(qid: str, body: SendEmailIn, db=Depends(get_db),
     except MailError as e:
         raise HTTPException(502, str(e))
     mark_sent(db, qid)
+    remember_descriptions(db, quote)
     return {"sent": True}

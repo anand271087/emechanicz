@@ -1,4 +1,5 @@
-import { Button, Input, Textarea } from "../../components/ui";
+import { Button, Input } from "../../components/ui";
+import DescriptionInput from "./DescriptionInput";
 import { formatINR } from "../../lib/inr";
 import { newRow, rowTotal, subtotal, type Row } from "./itemsLogic";
 
@@ -43,10 +44,8 @@ export default function ItemsEditor({ rows, onChange, words }: Props) {
               <span className="pt-2 text-center font-semibold text-navy">{i + 1}</span>
 
               <div className="min-w-0">
-                <Textarea aria-label={`Row ${i + 1} description`} rows={1} value={r.description}
-                  placeholder="Item description"
-                  onChange={(e) => update(i, { description: e.target.value })}
-                  className="field-sizing-content min-h-10 resize-none" />
+                <DescriptionInput label={`Row ${i + 1} description`} value={r.description}
+                  onChange={(description) => update(i, { description })} />
                 {i > 0 && (
                   <label className="mt-1.5 inline-flex items-center gap-2 text-sm text-muted">
                     <input type="checkbox" checked={r.joinAbove} className="size-4 accent-navy"

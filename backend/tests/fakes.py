@@ -34,6 +34,11 @@ class FakeQuery:
         self.op, self.payload = "insert", rows
         return self
 
+    def upsert(self, rows, on_conflict="", ignore_duplicates=False):
+        self.op, self.payload = "upsert", rows
+        self._conflict, self._ignore = on_conflict, ignore_duplicates
+        return self
+
     def update(self, values):
         self.op, self.payload = "update", values
         return self
@@ -50,9 +55,17 @@ class FakeQuery:
         self.filters.append(lambda r: str(r.get(col)) != str(val))
         return self
 
+    def in_(self, col, values):
+        wanted = {str(v) for v in values}
+        self.filters.append(lambda r: str(r.get(col)) in wanted)
+        return self
+
     def ilike(self, col, pattern):
-        needle = pattern.strip("%").lower()
-        self.filters.append(lambda r: needle in str(r.get(col, "")).lower())
+        # Postgres ILIKE with backslash escapes: % and _ are wildcards unless escaped.
+        regex = "".join(
+            re.escape(tok[1]) if tok.startswith("\\") else ".*" if tok == "%" else "." if tok == "_"
+            else re.escape(tok) for tok in re.findall(r"\\.|.", pattern, re.S))
+        self.filters.append(lambda r: re.fullmatch(regex, str(r.get(col, "")), re.I | re.S) is not None)
         return self
 
     def order(self, col, desc=False):
@@ -86,6 +99,18 @@ class FakeQuery:
             new = [{"id": f"id{next(_ids)}", **copy.deepcopy(r)} for r in new]
             rows.extend(new)
             data = new
+        elif self.op == "upsert":
+            data = []
+            for r in (self.payload if isinstance(self.payload, list) else [self.payload]):
+                hit = next((x for x in rows if x.get(self._conflict) == r[self._conflict]), None)
+                if hit is None:
+                    hit = {"id": f"id{next(_ids)}", **copy.deepcopy(r)}
+                    rows.append(hit)
+                elif not self._ignore:
+                    hit.update(copy.deepcopy(r))
+                else:
+                    continue
+                data.append(hit)
         elif self.op == "update":
             data = self._matches()
             for r in data:
@@ -109,7 +134,8 @@ class FakeQuery:
 
 class FakeDB:
     def __init__(self):
-        self.tables = {"customers": [], "quotes": [], "quote_items": [], "app_settings": []}
+        self.tables = {"customers": [], "quotes": [], "quote_items": [], "app_settings": [],
+                       "item_descriptions": []}
         self.fail_on = None
         self.seed_settings()
 

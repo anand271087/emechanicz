@@ -4,6 +4,7 @@ from datetime import date, datetime, timezone
 from fastapi import HTTPException
 
 from app.schemas.quote import QuoteIn, QuoteItemIn
+from app.services import item_descriptions
 from app.services.amount_words import amount_in_words
 from app.services.app_settings import get_setting, set_setting
 from app.services.quote_logic import compute_totals
@@ -107,6 +108,7 @@ def create_quote(db, body: QuoteIn, user_id: str) -> dict:
         raise
     _replace_items(db, quote["id"], items)
     _advance_sequence(db, body.ref_no, body.quote_date)
+    item_descriptions.record(db, [i.description for i in body.items])
     return fetch_quote(db, quote["id"])
 
 
@@ -121,6 +123,7 @@ def update_quote(db, qid: str, body: QuoteIn) -> dict:
                               ).eq("id", qid).execute()
     _replace_items(db, qid, items)
     _advance_sequence(db, body.ref_no, body.quote_date)
+    item_descriptions.record(db, [i.description for i in body.items])
     return fetch_quote(db, qid)
 
 
@@ -140,6 +143,11 @@ def duplicate_quote(db, qid: str, user_id: str) -> dict:
 def delete_quote(db, qid: str) -> None:
     fetch_quote(db, qid)
     db.table("quotes").delete().eq("id", qid).execute()
+
+
+def remember_descriptions(db, quote: dict) -> None:
+    """Make sure a quote's descriptions are in the suggestion list (e.g. quotes saved before it existed)."""
+    item_descriptions.record(db, [i["description"] for i in quote.get("quote_items", [])], touch=False)
 
 
 def mark_sent(db, qid: str) -> None:

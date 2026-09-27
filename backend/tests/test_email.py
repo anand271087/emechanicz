@@ -94,3 +94,10 @@ def test_port_465_uses_ssl(smtp, monkeypatch):
     c, _, qid = make_quote()
     assert c.post(f"/api/v1/quotes/{qid}/send-email", json=body()).status_code == 200
     ssl_server.send_message.assert_called_once()
+
+
+def test_sending_email_saves_descriptions(smtp):
+    c, db, qid = make_quote()
+    db.tables["item_descriptions"].clear()
+    c.post(f"/api/v1/quotes/{qid}/send-email", json=body())
+    assert [d["description"] for d in db.tables["item_descriptions"]] == ["Rack"]
