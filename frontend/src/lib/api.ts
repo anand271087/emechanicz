@@ -77,6 +77,13 @@ export function uploadFile<T>(path: string, file: File): Promise<T> {
   return api<T>(path, { method: "POST", body: form });
 }
 
+/** POST several files as multipart form data under the field name "files". */
+export function uploadFiles<T>(path: string, files: File[]): Promise<T> {
+  const form = new FormData();
+  files.forEach((f) => form.append("files", f));
+  return api<T>(path, { method: "POST", body: form });
+}
+
 /** Download an authenticated file, using the server's filename. */
 export async function downloadFile(path: string): Promise<void> {
   const res = await apiFetch(path);

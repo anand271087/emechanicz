@@ -106,6 +106,14 @@ The Items page can add items one at a time or upload an Excel list (`frontend/pu
 uploads only append, skipping items already in the list (any upper/lower case), repeats and blank rows.
 Typos can be fixed or removed there too.
 
+## Uploading existing quotations
+
+Quotations → Upload quotations reads old quotations from PDF, Excel (.xlsx, .xls) or Word (.docx, .doc)
+and shows what was read for review before anything is saved. Files whose ref no is already in the system
+are skipped; customers are matched ignoring case and punctuation, otherwise added. Saved quotations belong
+to the import owner (the `import_owner` app setting, Ramya) unless an admin picks someone else, and count on
+the dashboard on the date printed on them. Old .doc files need `antiword` (installed in the Docker image).
+
 ## Dashboard (admins only)
 
 Shows who created how many quotations and their value for Today, Last 30 days, This quarter and

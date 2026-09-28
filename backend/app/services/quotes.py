@@ -97,14 +97,16 @@ def _conflict(db, body: QuoteIn):
                                       "suggested_ref": suggest_ref(db, body.quote_date)})
 
 
-def create_quote(db, body: QuoteIn, user_id: str) -> dict:
+def create_quote(db, body: QuoteIn, user_id: str, created_at: str | None = None, status: str = "draft") -> dict:
     _check_customer(db, body.customer_id)
     if _ref_taken(db, body.ref_no):
         raise _conflict(db, body)
     items, subtotal = compute_totals(body.items)
+    row = {**_row(body, subtotal), "status": status, "created_by": user_id}
+    if created_at:
+        row["created_at"] = row["updated_at"] = created_at
     try:
-        quote = db.table("quotes").insert(
-            {**_row(body, subtotal), "status": "draft", "created_by": user_id}).execute().data[0]
+        quote = db.table("quotes").insert(row).execute().data[0]
     except Exception as e:  # unique violation from a concurrent insert
         if "23505" in str(e) or "duplicate key" in str(e):
             raise _conflict(db, body)

@@ -40,7 +40,10 @@ export default function QuoteList() {
   return (
     <>
       <PageHeader title="Quotations"
-        actions={<Button onClick={() => navigate("/quotes/new")}>New quotation</Button>} />
+        actions={<>
+          <Button variant="secondary" onClick={() => navigate("/quotes/import")}>Upload quotations</Button>
+          <Button onClick={() => navigate("/quotes/new")}>New quotation</Button>
+        </>} />
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <Input type="search" placeholder="Search by ref no or customer" value={search}

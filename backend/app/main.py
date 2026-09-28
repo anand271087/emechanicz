@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
-from app.routers import admin, customers, dashboard, documents, email, item_descriptions, quotes
+from app.routers import admin, customers, dashboard, documents, email, item_descriptions, quote_import, quotes
 from app.services.pdf import STATIC_DIR
 
 log = logging.getLogger("emechanicz")
@@ -36,6 +36,7 @@ app.add_middleware(
 
 
 app.include_router(customers.router)
+app.include_router(quote_import.router)
 app.include_router(quotes.router)
 app.include_router(documents.router)
 app.include_router(email.router)

@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from "./lib/auth";
 import Customers from "./modules/customers/Customers";
 import Dashboard from "./modules/dashboard/Dashboard";
 import Items from "./modules/items/Items";
+import ImportQuotes from "./modules/quotations/ImportQuotes";
 import QuoteBuilder from "./modules/quotations/QuoteBuilder";
 import QuoteList from "./modules/quotations/QuoteList";
 import QuotePreview from "./modules/quotations/QuotePreview";
@@ -29,6 +30,7 @@ export default function App() {
               <Route index element={<Navigate to="/quotes" replace />} />
               <Route path="/quotes" element={<QuoteList />} />
               <Route path="/quotes/new" element={<QuoteBuilder />} />
+              <Route path="/quotes/import" element={<ImportQuotes />} />
               <Route path="/quotes/:id" element={<QuotePreview />} />
               <Route path="/quotes/:id/edit" element={<QuoteBuilder />} />
               <Route path="/dashboard" element={<Dashboard />} />

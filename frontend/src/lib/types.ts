@@ -126,3 +126,33 @@ export interface DashboardData {
   recent: DashboardQuote[];
   monthly: { month: string; label: string; quotations: number; value: number }[];
 }
+
+export interface ImportItem {
+  sl_no: number;
+  description: string;
+  qty: number | null;
+  unit_price: number | null;
+  join_above: boolean;
+}
+
+export interface ImportDraft {
+  customer_name: string;
+  kind_attn: string;
+  ref_no: string;
+  issue_status: string;
+  quote_date: string | null;
+  intro: string;
+  terms: string[];
+  items: ImportItem[];
+  printed_total: number | null;
+  computed_total: number;
+  warnings: string[];
+}
+
+export interface ImportReadResult {
+  filename: string;
+  draft: ImportDraft | null;
+  error: string | null;
+  already_imported: boolean;
+  customer_id: string | null;
+}

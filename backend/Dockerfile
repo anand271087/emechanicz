@@ -1,8 +1,8 @@
 FROM python:3.12-slim
 
-# Pango/HarfBuzz are the system libraries WeasyPrint needs to render PDFs.
+# Pango/HarfBuzz are the system libraries WeasyPrint needs to render PDFs; antiword reads old .doc files.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 \
+    && apt-get install -y --no-install-recommends libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 antiword \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
