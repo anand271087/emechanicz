@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button, ErrorNote, RefBlock, Spinner, StatusBadge, useToast } from "../../components/ui";
+import { Button, ErrorNote, RefBlock, Spinner, useToast } from "../../components/ui";
 import { api, apiFetch, del, downloadFile, post } from "../../lib/api";
 import { formatDate, formatINR } from "../../lib/inr";
 import type { Quote } from "../../lib/types";
@@ -70,7 +70,6 @@ export default function QuotePreview() {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <RefBlock refNo={quote.ref_no} issue={quote.issue_status} />
-              <StatusBadge status={quote.status} />
             </div>
             <p className="mt-2 text-lg font-semibold text-navy">{quote.customers?.company_name}</p>
             <dl className="mt-1 grid grid-cols-[auto_1fr] gap-x-3 text-sm">
